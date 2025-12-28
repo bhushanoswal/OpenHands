@@ -1,31 +1,24 @@
-FROM ubuntu:22.04
+FROM python:3.11-slim
 
-# Basic packages
-RUN apt-get update && apt-get install -y \
-    curl ca-certificates git python3 python3-pip nodejs npm \
+# ---------- System dependencies ----------
+RUN apt update && apt install -y \
+    curl git nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------- Install Ollama ----------
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
-# Pull a FREE model (good + light)
-RUN ollama pull qwen2.5:7b
-
-# ---------- OpenDevin ----------
+# ---------- Setup working dir ----------
 WORKDIR /app
 COPY . .
 
-RUN pip3 install -r requirements.txt || pip3 install -r requirements-dev.txt
+# ---------- Python deps ----------
+RUN pip install -r requirements.txt
 
-# 3000 = OpenDevin
-# 11434 = Ollama
+# ---------- Expose Ports ----------
 EXPOSE 3000
 EXPOSE 11434
 
-ENV LLM_PROVIDER=ollama
-ENV OLLAMA_MODEL=qwen2.5:7b
-ENV OLLAMA_BASE_URL=http://localhost:11434
-ENV MAX_ITERATIONS=15
-ENV WORKSPACE_BASE=/workspace
-
-CMD ollama serve & python3 app.py
+# ---------- Startup ----------
+RUN chmod +x start.sh
+CMD ["./start.sh"]
