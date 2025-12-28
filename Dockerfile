@@ -1,32 +1,30 @@
-FROM ubuntu:22.04
+FROM python:3.12-slim
 
-# ---------- System packages ----------
+# ---- System deps ----
 RUN apt-get update && apt-get install -y \
-    curl git python3 python3-pip python3-venv \
-    nodejs npm \
+    curl git build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# ---------- Install Ollama ----------
+# ---- Install Ollama ----
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
-ENV OLLAMA_HOST=0.0.0.0
-
-# ---------- App setup ----------
+# ---- Create app dir ----
 WORKDIR /app
+
+# ---- Copy repo ----
 COPY . .
 
-# Install Python deps for OpenHands the correct way
+# ---- Upgrade pip ----
 RUN pip install --upgrade pip
+
+# ---- Install OpenHands ----
 RUN pip install -e .
 
-# ---------- Expose Ports ----------
+# ---- Expose ports ----
 EXPOSE 3000
-EXPOSE 11434
 
-# ---------- Startup Script ----------
-CMD bash -c "\
-  ollama serve & \
-  sleep 5 && \
-  ollama pull qwen2.5:7b && \
-  python -m openhands \
-"
+# ---- Start Ollama + pull model + run server ----
+CMD ollama serve & \
+    sleep 5 && \
+    ollama pull qwen2.5:7b && \
+    python -m openhands
