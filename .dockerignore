@@ -1,8 +1,4 @@
 .git
 __pycache__
-*.md
-/dev_config/
-/docs/
-/tests/
-/evaluation/
-frontend/node_modules
+node_modules
+*.log
